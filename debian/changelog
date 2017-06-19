@@ -1,4 +1,11 @@
-memorize-flashcards (1.0) unstable; urgency=low
+memorize-flashcards (1.0-1) unstable; urgency=medium
+
+  * Add postinstall script to add permissions to the db directory so any
+    user can access 
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Mon, 19 Jun 2017 15:08:53 +0300
+
+memorize-flashcards (1.0-0) unstable; urgency=low
 
   * Initial Release.
 

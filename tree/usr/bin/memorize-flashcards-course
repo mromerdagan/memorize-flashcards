@@ -5,11 +5,14 @@ die() {
 	exit 1
 }
 
+sqlexec=`which sqlite3`
+[ -x "$sqlexec" ] || die "E: Missing sqlite3 executable"
+
 me=`basename $0`
 usage() {
 	echo >&2 "Usage:"
-	echo >&2 "    $me create <name> [<card>...]"
-	echo >&2 "    $me update <name> <card> [<card>...]"
+	echo >&2 "    $me create <name> [<cardfile>...]"
+	echo >&2 "    $me update <name> <cardfile> [<cardfile>...]"
 	echo >&2 "    $me verify <name>"
 	echo >&2 "    $me dump   <name> <dir>"
 	exit 1
@@ -32,12 +35,23 @@ create_db() {
 	local name="$1"
 	local dbroot="`read_conf_var DBROOT`"
 	local path="$dbroot/${name}.db"
-	echo "D: $path"
+	[ -e "$path" ] && die "E: Course already exists: $path"
+	$sqlexec "$path" '' 
+}
+
+add_card() {
+	local dbname="$1"
+	local cardfile="$2"
 }
 
 case "$action" in
 	create)
 		create_db "$name"
+		shift
+		shift
+		for cardfile in "$@"; do
+			add_card "$name" "$cardfile"
+		done
 		;;
 	update)
 		die "$action: Not yet implemented"
