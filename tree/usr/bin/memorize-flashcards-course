@@ -23,7 +23,7 @@ action="$1"
 name="$2"
 
 conf="/etc/memorize-flashcards/conf"
-conf="tree/etc/memorize-flashcards/conf"
+#conf="tree/etc/memorize-flashcards/conf"
 [ -e "$conf" ] || die "E: Missing configuration: $conf"
 
 read_conf_var() {
