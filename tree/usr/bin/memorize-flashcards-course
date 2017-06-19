@@ -1,0 +1,54 @@
+#!/bin/sh
+
+die() {
+	echo "$@" >&2
+	exit 1
+}
+
+me=`basename $0`
+usage() {
+	echo >&2 "Usage:"
+	echo >&2 "    $me create <name> [<card>...]"
+	echo >&2 "    $me update <name> <card> [<card>...]"
+	echo >&2 "    $me verify <name>"
+	echo >&2 "    $me dump   <name> <dir>"
+	exit 1
+}
+
+[ "$#" -ge 2 ] || usage
+action="$1"
+name="$2"
+
+conf="/etc/memorize-flashcards/conf"
+conf="tree/etc/memorize-flashcards/conf"
+[ -e "$conf" ] || die "E: Missing configuration: $conf"
+
+read_conf_var() {
+	varname="$1"
+	grep "^$varname\s\+" "$conf" | awk '{print $2}'
+}
+
+create_db() {
+	local name="$1"
+	local dbroot="`read_conf_var DBROOT`"
+	local path="$dbroot/${name}.db"
+	echo "D: $path"
+}
+
+case "$action" in
+	create)
+		create_db "$name"
+		;;
+	update)
+		die "$action: Not yet implemented"
+		;;
+	verify)
+		die "$action: Not yet implemented"
+		;;
+	dump)
+		die "$action: Not yet implemented"
+		;;
+	*)
+		die "E: Unknown action: $action"
+		;;
+esac

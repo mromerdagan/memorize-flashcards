@@ -1,0 +1,16 @@
+Source: memorize-flashcards
+Section: education
+Priority: optional
+Maintainer: Omer Dagan <mr.omer.dagan@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Homepage: https://mromerdagan.wixsite.com/omerdagan
+
+Package: memorize-flashcards
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ sqlite3
+Description: Flash cards memorization trainer (knosole)
+ Konsole flash cards memorization trainer. The key feature
+ is that the trainer chalenge you more with the cards you
+ show less familiarity with. Effective on frequent use.
