@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 die() {
 	echo "$@" >&2
 	exit 1
@@ -31,17 +33,43 @@ read_conf_var() {
 	grep "^$varname\s\+" "$conf" | awk '{print $2}'
 }
 
+dbroot="`read_conf_var DBROOT`"
+dbpath="$dbroot/${name}.db"
 create_db() {
 	local name="$1"
-	local dbroot="`read_conf_var DBROOT`"
-	local path="$dbroot/${name}.db"
-	[ -e "$path" ] && die "E: Course already exists: $path"
-	$sqlexec "$path" '' 
+
+	# Sanity: Make sure course db is not already there
+	[ -e "$dbpath" ] && die "E: Course already exists: $dbpath"
+
+	# Construct schema
+	cards_schema=$(cat <<-EOF
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		path text NOT NULL UNIQUE,
+		hash text NOT NULL UNIQUE,
+		lesson int,
+		period int
+	EOF
+	)
+
+	# Create new course database and an empty cards table
+	$sqlexec "$dbpath" "CREATE TABLE cards ($cards_schema);"
 }
 
+cards_dir=`read_conf_var CARDSROOT`
 add_card() {
 	local dbname="$1"
 	local cardfile="$2"
+	[ -f "$cardfile" ] || die "Missing card file: $cardfile"
+
+	cardhash=`md5sum "$cardfile" | awk '{print $1}'`
+	carddest="$cards_dir/${cardhash}.card"
+	if ! [ -f "$carddest" ]; then
+		echo "D: Copy $cardfile --> $carddest"
+		cp "$cardfile" "$carddest" # Possibly card exists in other course, and needs to be added to db only
+	fi
+
+	echo "D: Insert db record ('$carddest', '$cardhash', 1, 1)"
+	$sqlexec "$dbpath" "INSERT INTO cards ('path', 'hash', 'lesson', 'period') VALUES ('$carddest', '$cardhash', 1, 1);"
 }
 
 case "$action" in
@@ -54,7 +82,13 @@ case "$action" in
 		done
 		;;
 	update)
-		die "$action: Not yet implemented"
+		[ "$#" -ge 3 ] || usage
+		[ -e "$dbpath" ] || die "E: Course missing (searched $dbpath)"
+		shift
+		shift
+		for cardfile in "$@"; do
+			add_card "$name" "$cardfile"
+		done
 		;;
 	verify)
 		die "$action: Not yet implemented"

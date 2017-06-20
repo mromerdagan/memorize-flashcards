@@ -22,6 +22,8 @@ case "$1" in
     configure)
     	chown root:users /var/lib/memorize-flashcards/db
     	chmod 775 /var/lib/memorize-flashcards/db
+    	chown root:users /var/lib/memorize-flashcards/cards
+    	chmod 775 /var/lib/memorize-flashcards/cards
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

@@ -1,3 +1,13 @@
+memorize-flashcards (1.0-3) unstable; urgency=medium
+
+  * memorize-flashcards-course:
+    - in create_db(): Added schema to the cards table
+    - initial implementation for add_card: copy cardfile to internal cards
+      directory and add reference from db
+    - Implmeneted update()
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 20 Jun 2017 14:37:25 +0300
+
 memorize-flashcards (1.0-2) unstable; urgency=medium
 
   * In postinstall script- change ownership to root:users so last change

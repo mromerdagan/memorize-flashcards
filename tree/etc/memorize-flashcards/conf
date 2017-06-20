@@ -1,1 +1,2 @@
-DBROOT	/var/lib/memorize-flashcards/db
+DBROOT	    /var/lib/memorize-flashcards/db
+CARDSROOT   /var/lib/memorize-flashcards/cards
