@@ -25,7 +25,6 @@ action="$1"
 name="$2"
 
 conf="/etc/memorize-flashcards/conf"
-#conf="tree/etc/memorize-flashcards/conf"
 [ -e "$conf" ] || die "E: Missing configuration: $conf"
 
 read_conf_var() {
@@ -39,7 +38,7 @@ create_db() {
 	local name="$1"
 
 	# Sanity: Make sure course db is not already there
-	[ -e "$dbpath" ] && die "E: Course already exists: $dbpath"
+	[ -e "$dbpath" ] && die "E: Course already exists: $dbpath (To add cards use the action: update)"
 
 	# Construct schema
 	cards_schema=$(cat <<-EOF
@@ -68,8 +67,24 @@ add_card() {
 		cp "$cardfile" "$carddest" # Possibly card exists in other course, and needs to be added to db only
 	fi
 
-	echo "D: Insert db record ('$carddest', '$cardhash', 1, 1)"
-	$sqlexec "$dbpath" "INSERT INTO cards ('path', 'hash', 'lesson', 'period') VALUES ('$carddest', '$cardhash', 1, 1);"
+	# Check if value exists on db already
+	card_exists=$($sqlexec "$dbpath" "SELECT CASE WHEN EXISTS (SELECT 1 FROM cards WHERE hash = '$cardhash') THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END;")
+	if [ "$card_exists" = 1 ]; then
+		echo >&2 "W: $cardfile already exists in course db"
+	else
+		echo "D: Insert db record ('$carddest', '$cardhash', 1, 1)"
+		$sqlexec "$dbpath" "INSERT INTO cards ('path', 'hash', 'lesson', 'period') VALUES ('$carddest', '$cardhash', 1, 1);"
+
+		# Increase reference count of the card in cards.list
+		cards_list="$cards_dir/cards.list"
+		if grep "$cardhash" "$cards_list" --quiet; then
+			refcount=`grep "$cardhash" "$cards_list" | awk '{ print $2 }'`
+			refcount=$((refcount+1))
+			sed -i "s,${cardhash}.*,${cardhash}\t${refcount}," $cards_list
+		else
+			echo "$cardhash\t1" >> "$cards_list"
+		fi
+	fi
 }
 
 case "$action" in

@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-4) unstable; urgency=medium
+
+  * memorize-flashcards-course:
+    - Check if card exists in course before adding it
+    - Add card.list file that contains refcounts of cards. This way I can
+      support cards that will be common to multiple courses
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Wed, 21 Jun 2017 10:18:14 +0300
+
 memorize-flashcards (1.0-3) unstable; urgency=medium
 
   * memorize-flashcards-course:
