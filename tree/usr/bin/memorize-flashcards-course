@@ -7,9 +7,6 @@ die() {
 	exit 1
 }
 
-sqlexec=`which sqlite3`
-[ -x "$sqlexec" ] || die "E: Missing sqlite3 executable"
-
 me=`basename $0`
 usage() {
 	echo >&2 "Usage:"
@@ -42,7 +39,6 @@ create_empty_db() {
 	[ -e "$coursetable" ] && die "E: Course already exists: $coursetable (To add cards use the action: update)"
 
 	## Create new course database and an empty cards table
-	#$sqlexec "$coursetable" "CREATE TABLE cards ($cards_schema);"
 	touch "$coursetable"
 	echo "# Hash\t\t\t\t\t\tPath\t\t\t\t\t\t\t\t\t\tLesson\tPeriod" > "$coursetable"
 }

@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-7) unstable; urgency=medium
+
+  * Removed obsolete sql calls and checks
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sun, 02 Jul 2017 16:51:16 +0300
+
 memorize-flashcards (1.0-6) unstable; urgency=medium
 
   * Add two actions:
