@@ -8,8 +8,7 @@ Homepage: https://mromerdagan.wixsite.com/omerdagan
 
 Package: memorize-flashcards
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
- sqlite3
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Flash cards memorization trainer (knosole app)
  Konsole flash cards memorization trainer. The key feature
  is that the trainer chalenge you more with the cards you

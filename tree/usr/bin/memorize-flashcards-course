@@ -13,16 +13,16 @@ sqlexec=`which sqlite3`
 me=`basename $0`
 usage() {
 	echo >&2 "Usage:"
-	echo >&2 "    $me create <name> [<cardfile>...]"
-	echo >&2 "    $me update <name> <cardfile> [<cardfile>...]"
-	echo >&2 "    $me verify <name>"
-	echo >&2 "    $me dump   <name> <dir>"
+	echo >&2 "    $me create <coursename> [<cardfile>...]"
+	echo >&2 "    $me update <coursename> <cardfile> [<cardfile>...]"
+	echo >&2 "    $me verify <coursename>"
+	echo >&2 "    $me dump   <coursename> <dir>"
+	echo >&2 "    $me list"
 	exit 1
 }
 
-[ "$#" -ge 2 ] || usage
+[ "$#" -ge 1 ] || usage
 action="$1"
-name="$2"
 
 conf="/etc/memorize-flashcards/conf"
 [ -e "$conf" ] || die "E: Missing configuration: $conf"
@@ -33,83 +33,88 @@ read_conf_var() {
 }
 
 dbroot="`read_conf_var DBROOT`"
-dbpath="$dbroot/${name}.db"
-create_db() {
-	local name="$1"
-
+create_empty_db() {
+	local coursename="$1"
+	local coursetable="$dbroot/${coursename}.db"
 	# Sanity: Make sure course db is not already there
-	[ -e "$dbpath" ] && die "E: Course already exists: $dbpath (To add cards use the action: update)"
+	[ -e "$coursetable" ] && die "E: Course already exists: $coursetable (To add cards use the action: update)"
 
-	# Construct schema
-	cards_schema=$(cat <<-EOF
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		path text NOT NULL UNIQUE,
-		hash text NOT NULL UNIQUE,
-		lesson int,
-		period int
-	EOF
-	)
-
-	# Create new course database and an empty cards table
-	$sqlexec "$dbpath" "CREATE TABLE cards ($cards_schema);"
+	## Create new course database and an empty cards table
+	#$sqlexec "$coursetable" "CREATE TABLE cards ($cards_schema);"
+	touch "$coursetable"
+	echo "# Hash          Path        Lesson  Period" > "$coursetable"
 }
 
 cards_dir=`read_conf_var CARDSROOT`
+cards_table="$cards_dir/cards.table"
 add_card() {
-	local dbname="$1"
+	local coursename="$1"
 	local cardfile="$2"
+	local coursetable="$dbroot/${coursename}.db"
+	[ -f "$coursetable" ] || die "Missing course table: $coursetable"
 	[ -f "$cardfile" ] || die "Missing card file: $cardfile"
 
 	cardhash=`md5sum "$cardfile" | awk '{print $1}'`
-	carddest="$cards_dir/${cardhash}.card"
-	if ! [ -f "$carddest" ]; then
-		echo "D: Copy $cardfile --> $carddest"
-		cp "$cardfile" "$carddest" # Possibly card exists in other course, and needs to be added to db only
+	if grep --silent "$cardhash" "$coursetable"; then # Card already exists in course table, nothing to do
+		echo >&2 "W: $cardfile already exists in course table"
+		return
 	fi
 
-	# Check if value exists on db already
-	card_exists=$($sqlexec "$dbpath" "SELECT CASE WHEN EXISTS (SELECT 1 FROM cards WHERE hash = '$cardhash') THEN CAST (1 AS BIT) ELSE CAST (0 AS BIT) END;")
-	if [ "$card_exists" = 1 ]; then
-		echo >&2 "W: $cardfile already exists in course db"
-	else
-		echo "D: Insert db record ('$carddest', '$cardhash', 1, 1)"
-		$sqlexec "$dbpath" "INSERT INTO cards ('path', 'hash', 'lesson', 'period') VALUES ('$carddest', '$cardhash', 1, 1);"
+	carddest="$cards_dir/${cardhash}.card"
+	# Copy card file
+	if ! [ -f "$carddest" ]; then # Possibly card already exists in other course, and only needs to be added to card table
+		echo "D: Copy $cardfile --> $carddest"
+		cp "$cardfile" "$carddest"
+	fi
 
-		# Increase reference count of the card in cards.list
-		cards_list="$cards_dir/cards.list"
-		if grep "$cardhash" "$cards_list" --quiet; then
-			refcount=`grep "$cardhash" "$cards_list" | awk '{ print $2 }'`
-			refcount=$((refcount+1))
-			sed -i "s,${cardhash}.*,${cardhash}\t${refcount}," $cards_list
-		else
-			echo "$cardhash\t1" >> "$cards_list"
-		fi
+	# Add card record to course table
+	echo "D: Insert card record ('$carddest', '$cardhash', 1, 1)"
+	echo "$cardhash\t$carddest\t-\t-" >> "$coursetable"
+
+	# Increase reference count of the card in cards.list
+	if grep "$cardhash" "$cards_table" --quiet; then
+		refcount=`grep "$cardhash" "$cards_table" | awk '{ print $2 }'`
+		refcount=$((refcount+1))
+		sed -i "s,${cardhash}.*,${cardhash}\t${refcount}," $cards_table
+	else
+		echo "$cardhash\t1" >> "$cards_table"
 	fi
 }
 
 case "$action" in
 	create)
-		create_db "$name"
+		[ "$#" -ge 2 ] || usage
+		coursename="$2"
+		create_empty_db "$coursename"
 		shift
 		shift
 		for cardfile in "$@"; do
-			add_card "$name" "$cardfile"
+			add_card "$coursename" "$cardfile"
 		done
 		;;
 	update)
 		[ "$#" -ge 3 ] || usage
-		[ -e "$dbpath" ] || die "E: Course missing (searched $dbpath)"
+		coursename="$2"
+		[ -e "$coursetable" ] || die "E: Course missing (searched $coursetable)"
 		shift
 		shift
 		for cardfile in "$@"; do
-			add_card "$name" "$cardfile"
+			add_card "$coursename" "$cardfile"
 		done
 		;;
 	verify)
+		[ "$#" -eq 2 ] || usage
+		coursename="$2"
 		die "$action: Not yet implemented"
 		;;
 	dump)
+		[ "$#" -eq 3 ] || usage
+		coursename="$2"
+		destdir="$3"
 		die "$action: Not yet implemented"
+		;;
+	list)
+		ls -1 "$dbroot"/*.db
 		;;
 	*)
 		die "E: Unknown action: $action"
