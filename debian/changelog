@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-6) unstable; urgency=medium
+
+  * Add two actions:
+    - show-course: shows course table
+    - show-card: shows card's content
+  * Small fixes and improvements
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sun, 02 Jul 2017 15:34:12 +0300
+
 memorize-flashcards (1.0-5) unstable; urgency=medium
 
   * Use simple text files instead of sqllite, for simplicity. Realized that

@@ -18,6 +18,8 @@ usage() {
 	echo >&2 "    $me verify <coursename>"
 	echo >&2 "    $me dump   <coursename> <dir>"
 	echo >&2 "    $me list"
+	echo >&2 "    $me show-course <coursename>"
+	echo >&2 "    $me show-card <cardhash>"
 	exit 1
 }
 
@@ -42,7 +44,7 @@ create_empty_db() {
 	## Create new course database and an empty cards table
 	#$sqlexec "$coursetable" "CREATE TABLE cards ($cards_schema);"
 	touch "$coursetable"
-	echo "# Hash          Path        Lesson  Period" > "$coursetable"
+	echo "# Hash\t\t\t\t\t\tPath\t\t\t\t\t\t\t\t\t\tLesson\tPeriod" > "$coursetable"
 }
 
 cards_dir=`read_conf_var CARDSROOT`
@@ -51,11 +53,14 @@ add_card() {
 	local coursename="$1"
 	local cardfile="$2"
 	local coursetable="$dbroot/${coursename}.db"
-	[ -f "$coursetable" ] || die "Missing course table: $coursetable"
-	[ -f "$cardfile" ] || die "Missing card file: $cardfile"
+	[ -f "$coursetable" ] || die "E: Missing course table: $coursetable"
+	if ! [ -f "$cardfile" ]; then
+		echo >&2 "W: Missing card file: $cardfile"
+		return
+	fi
 
 	cardhash=`md5sum "$cardfile" | awk '{print $1}'`
-	if grep --silent "$cardhash" "$coursetable"; then # Card already exists in course table, nothing to do
+	if grep --silent "^$cardhash" "$coursetable"; then # Card already exists in course table, nothing to do
 		echo >&2 "W: $cardfile already exists in course table"
 		return
 	fi
@@ -63,21 +68,21 @@ add_card() {
 	carddest="$cards_dir/${cardhash}.card"
 	# Copy card file
 	if ! [ -f "$carddest" ]; then # Possibly card already exists in other course, and only needs to be added to card table
-		echo "D: Copy $cardfile --> $carddest"
+		echo "I: Copy $cardfile --> $carddest"
 		cp "$cardfile" "$carddest"
 	fi
 
 	# Add card record to course table
-	echo "D: Insert card record ('$carddest', '$cardhash', 1, 1)"
-	echo "$cardhash\t$carddest\t-\t-" >> "$coursetable"
+	echo "I: Insert card record ('$carddest', '$cardhash', -, -)"
+	echo "$cardhash\t$filename\t$carddest\t-\t-" >> "$coursetable"
 
 	# Increase reference count of the card in cards.list
-	if grep "$cardhash" "$cards_table" --quiet; then
-		refcount=`grep "$cardhash" "$cards_table" | awk '{ print $2 }'`
+	if grep "^$cardhash" "$cards_table" --quiet; then
+		refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
 		refcount=$((refcount+1))
-		sed -i "s,${cardhash}.*,${cardhash}\t${refcount}," $cards_table
+		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
 	else
-		echo "$cardhash\t1" >> "$cards_table"
+		echo "$cardhash\t`basename ${carddest}`\t1" >> "$cards_table"
 	fi
 }
 
@@ -88,6 +93,7 @@ case "$action" in
 		create_empty_db "$coursename"
 		shift
 		shift
+		[ -f "$cards_table" ] || touch "$cards_table"
 		for cardfile in "$@"; do
 			add_card "$coursename" "$cardfile"
 		done
@@ -95,6 +101,7 @@ case "$action" in
 	update)
 		[ "$#" -ge 3 ] || usage
 		coursename="$2"
+		coursetable="$dbroot/${coursename}.db"
 		[ -e "$coursetable" ] || die "E: Course missing (searched $coursetable)"
 		shift
 		shift
@@ -114,7 +121,23 @@ case "$action" in
 		die "$action: Not yet implemented"
 		;;
 	list)
-		ls -1 "$dbroot"/*.db
+		ls -1 "$dbroot"/*.db 2>/dev/null | sed -s "s,$dbroot/,," || :
+		;;
+	show-course)
+		[ "$#" -eq 2 ] || usage
+		coursename="$2"
+		coursetable="$dbroot/${coursename}.db"
+		[ -f "$coursetable" ] || die "E: Course missing (searched $coursetable)"
+		cat "$coursetable"
+		;;
+	show-card)
+		[ "$#" -eq 2 ] || usage
+		cardhash="$2"
+		grep "^$cardhash" "$cards_table" --quiet || die "E: Card not found in cards table ($cards_table)"
+		cardbase=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
+		cardfile="$cards_dir/$cardbase"
+		[ -f "$cardfile" ] || die "E: Card table pointing to missing file: $cardfile"
+		cat "$cardfile"
 		;;
 	*)
 		die "E: Unknown action: $action"
