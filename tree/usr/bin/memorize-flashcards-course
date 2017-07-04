@@ -117,7 +117,7 @@ case "$action" in
 		die "$action: Not yet implemented"
 		;;
 	list)
-		ls -1 "$dbroot"/*.db 2>/dev/null | sed -s "s,$dbroot/,," || :
+		ls -1 "$dbroot"/*.db 2>/dev/null | sed -e "s,$dbroot/,," -e 's,.db$,,' || :
 		;;
 	show-course)
 		[ "$#" -eq 2 ] || usage

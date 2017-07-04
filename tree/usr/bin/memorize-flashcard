@@ -1,0 +1,96 @@
+#!/usr/bin/python
+""" Usage:
+	memorize-flashcard fetch <course>
+	memorize-flashcard update <course> <hash> (1|0)
+"""
+
+import sys
+import subprocess
+from collections import namedtuple
+from docopt import docopt, DocoptExit
+#try:
+#	arguments = docopt(__doc__)
+#except DocoptExit:
+#	print __doc__
+#	sys.exit()
+#print arguments
+
+class Card(object):
+	def __init__(self, hash_, path, lesson, period):
+		self.hash = hash_
+		self.path = path
+		try:
+			self.lesson = int(lesson)
+		except ValueError:
+			self.lesson = None
+		try:
+			self.period = int(period)
+		except ValueError:
+			self.period = None
+	
+	def __repr__(self):
+		return "Card({}, {}, {}, {})".format(\
+			self.hash, \
+			self.path, \
+			self.lesson if self.lesson else '-', \
+			self.period if self.period else '-', \
+			)
+
+class Policy(object):
+	def __init__(self, coursename):
+		self.coursename = coursename
+		self.verify_course()
+		self.cards = self.get_cards()
+	
+	def verify_course(self):
+		cmd = 'memorize-flashcards-course list'
+		try:
+			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		except Exception, e:
+			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+			raise
+		out, err = output.communicate()
+		courses = out.split('\n')
+		courses = [course.strip() for course in courses]
+		courses = filter(bool, courses)
+		if not(self.coursename in courses):
+			raise Exception("E: Course {} is missing from courses db (available courses: {})".format(self.coursename, courses))
+		
+	def get_cards(self):
+		# output = subprocess.Popen('memorize-flashcards-course list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		cmd = 'memorize-flashcards-course show-course {}'.format(self.coursename)
+		try:
+			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		except Exception, e:
+			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+			raise
+		out, err = output.communicate()
+		out = out.split('\n')
+		out = map(lambda s: s.strip(), out)
+		out = map(lambda s: s[:s.find('#')] if '#' in s else s, out)
+		out = filter(bool, out)
+		out = [Card(*line.split()) for line in out]
+		return out
+	
+	def course_table_str(self):
+		ret = ''
+		self.cards = sorted(self.cards, key=lambda c: (c.lesson, c.period))
+		fomatter = "{:<35} {:<74} {:<7} {}"
+		ret += fomatter.format('# Hash', 'Path', 'Lesson', 'Period') + "\n"
+		for card in self.cards:
+			ret += fomatter.format(card.hash, card.path, card.lesson if card.lesson else '-', card.period if card.period else '-') + "\n"
+		ret.strip()
+		return ret
+	
+	# Abstract methods
+	def fetch_card(self):
+		raise NotImplementedError('Abstract method. Implemented in sub classes')
+	
+	def update_card(self, card, value):
+		raise NotImplementedError('Abstract method. Implemented in sub classes')
+
+if __name__ == "__main__":
+	p = Policy('perl-lamma')
+	#print "\n".join([c.__repr__() for c in p.cards])
+	print p.course_table_str()
+

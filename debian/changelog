@@ -1,3 +1,15 @@
+memorize-flashcards (1.0-8) unstable; urgency=medium
+
+  * Stared implementing python module with new abstract class: Policy. Derived
+    classes will need to implement policy to fetch cards and orginze the cards 
+    accordingly. At the moment two policies comes in my mind: 
+    - Classic- make sure next lesson has X cards, if not add fresh ones. Take
+      card from lowest lesson number. Update lesson/period values of card
+      according to know/don't know value.
+    - Random- show random card, do not touch it's lesson/period values.
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 04 Jul 2017 10:02:35 +0300
+
 memorize-flashcards (1.0-7) unstable; urgency=medium
 
   * Removed obsolete sql calls and checks
