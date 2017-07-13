@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-9) unstable; urgency=medium
+
+  * Implement sub-class: ClassicPolicy. Classic policy is the one that Prof.
+    Goldberg from BGU suggests, to "fit your own brain"- it pushes cards you
+    already know to greater lessons, faster and faster over time. Failure to
+    know a card will reset the period.
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Thu, 13 Jul 2017 12:42:13 +0300
+
 memorize-flashcards (1.0-8) unstable; urgency=medium
 
   * Stared implementing python module with new abstract class: Policy. Derived

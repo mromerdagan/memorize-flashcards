@@ -4,10 +4,9 @@
 	memorize-flashcard update <course> <hash> (1|0)
 """
 
-import sys
+#import sys
 import subprocess
-from collections import namedtuple
-from docopt import docopt, DocoptExit
+#from docopt import docopt, DocoptExit
 #try:
 #	arguments = docopt(__doc__)
 #except DocoptExit:
@@ -27,7 +26,7 @@ class Card(object):
 			self.period = int(period)
 		except ValueError:
 			self.period = None
-	
+
 	def __repr__(self):
 		return "Card({}, {}, {}, {})".format(\
 			self.hash, \
@@ -39,24 +38,24 @@ class Card(object):
 class Policy(object):
 	def __init__(self, coursename):
 		self.coursename = coursename
-		self.verify_course()
-		self.cards = self.get_cards()
-	
-	def verify_course(self):
+		self._verify_course()
+		self.cards = self._read_cards()
+
+	def _verify_course(self):
 		cmd = 'memorize-flashcards-course list'
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		except Exception, e:
 			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
 			raise
-		out, err = output.communicate()
+		out, _ = output.communicate()
 		courses = out.split('\n')
 		courses = [course.strip() for course in courses]
 		courses = filter(bool, courses)
 		if not(self.coursename in courses):
 			raise Exception("E: Course {} is missing from courses db (available courses: {})".format(self.coursename, courses))
-		
-	def get_cards(self):
+
+	def _read_cards(self):
 		# output = subprocess.Popen('memorize-flashcards-course list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		cmd = 'memorize-flashcards-course show-course {}'.format(self.coursename)
 		try:
@@ -64,33 +63,94 @@ class Policy(object):
 		except Exception, e:
 			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
 			raise
-		out, err = output.communicate()
+		out, _ = output.communicate()
 		out = out.split('\n')
 		out = map(lambda s: s.strip(), out)
 		out = map(lambda s: s[:s.find('#')] if '#' in s else s, out)
 		out = filter(bool, out)
 		out = [Card(*line.split()) for line in out]
 		return out
-	
+
+	@staticmethod
+	def sorting_key(card):
+		return card.lesson if card.lesson else float('inf')
+
+	## Public methods
+	def write_changes(self):
+		raise NotImplementedError()
+
+	def sort_cards(self):
+		self.cards.sort(key=self.sorting_key)
+
 	def course_table_str(self):
 		ret = ''
-		self.cards = sorted(self.cards, key=lambda c: (c.lesson, c.period))
 		fomatter = "{:<35} {:<74} {:<7} {}"
 		ret += fomatter.format('# Hash', 'Path', 'Lesson', 'Period') + "\n"
-		for card in self.cards:
+		for card in sorted(self.cards, key=self.sorting_key):
 			ret += fomatter.format(card.hash, card.path, card.lesson if card.lesson else '-', card.period if card.period else '-') + "\n"
 		ret.strip()
 		return ret
-	
+
 	# Abstract methods
 	def fetch_card(self):
 		raise NotImplementedError('Abstract method. Implemented in sub classes')
-	
+
 	def update_card(self, card, value):
 		raise NotImplementedError('Abstract method. Implemented in sub classes')
 
+class ClassicPolicy(Policy):
+	def __init__(self, coursename):
+		Policy.__init__(self, coursename)
+		self.LESSON_MIN_LENGTH = 10
+		self.sort_cards()
+
+	## Helpers
+	def _get_lesson(self, index):
+		return [card for card in self.cards if card.lesson == index]
+
+	def _fresh_cards(self):
+		return self._get_lesson(None)
+
+	def _fill_course(self, index):
+		while (len(self._get_lesson(index)) < self.LESSON_MIN_LENGTH):
+			try:
+				freshcard = self._fresh_cards()[0]
+			except IndexError:
+				break
+			freshcard.lesson = index
+			freshcard.period = 1
+
+	def _standardize_lessons(self):
+		min_lesson = min([card.lesson for card in self.cards if card.lesson])
+		diff = min_lesson - 1
+		if diff:
+			for card in self.cards:
+				if (card.lesson != None):
+					card.lesson -= diff
+
+	def _fix_first_lesson(self):
+		self.sort_cards()
+		if self.cards[0].lesson == 1:
+			return
+		self._fill_course(2)
+		self._standardize_lessons()
+
+	## Public methods, derived from super class
+	def fetch_card(self):
+		self.sort_cards()
+		self._fix_first_lesson()
+		return self.cards[0]
+
+	def update_card(self, card, value):
+		if (value == True):
+			card.lesson += card.period
+			card.period *= 2
+		else: # value == False
+			card.lesson += 1
+			card.period = 1
+
 if __name__ == "__main__":
-	p = Policy('perl-lamma')
+	p = ClassicPolicy('perl-lamma')
 	#print "\n".join([c.__repr__() for c in p.cards])
 	print p.course_table_str()
 
