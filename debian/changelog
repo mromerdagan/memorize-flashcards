@@ -1,3 +1,13 @@
+memorize-flashcards (1.0-11) unstable; urgency=medium
+
+  * memorize-flashcards-course:
+    - New action: update-card, updates the values of lesson/period of given
+      card for given course.
+    - Rename action 'update' to 'add-card'
+  * Add Makefile that rsyncs everything in "tree" to debian/tmp
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sun, 13 Aug 2017 16:16:18 +0300
+
 memorize-flashcards (1.0-10) unstable; urgency=medium
 
   * Implement _parse_content private class method for Card. This returns dict

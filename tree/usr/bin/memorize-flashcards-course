@@ -11,11 +11,12 @@ me=`basename $0`
 usage() {
 	echo >&2 "Usage:"
 	echo >&2 "    $me create <coursename> [<cardfile>...]"
-	echo >&2 "    $me update <coursename> <cardfile> [<cardfile>...]"
+	echo >&2 "    $me add-cards <coursename> <cardfile> [<cardfile>...]"
 	echo >&2 "    $me verify <coursename>"
 	echo >&2 "    $me dump   <coursename> <dir>"
 	echo >&2 "    $me list"
 	echo >&2 "    $me show-course <coursename>"
+	echo >&2 "    $me update-card <coursename> <cardhash> <new-lesson-val> <new-period-val>"
 	echo >&2 "    $me show-card <cardhash>"
 	exit 1
 }
@@ -70,7 +71,7 @@ add_card() {
 
 	# Add card record to course table
 	echo "I: Insert card record ('$carddest', '$cardhash', -, -)"
-	echo "$cardhash\t$filename\t$carddest\t-\t-" >> "$coursetable"
+	echo "$cardhash\t\t$carddest\t-\t-" >> "$coursetable"
 
 	# Increase reference count of the card in cards.list
 	if grep "^$cardhash" "$cards_table" --quiet; then
@@ -94,7 +95,7 @@ case "$action" in
 			add_card "$coursename" "$cardfile"
 		done
 		;;
-	update)
+	add-cards)
 		[ "$#" -ge 3 ] || usage
 		coursename="$2"
 		coursetable="$dbroot/${coursename}.db"
@@ -125,6 +126,21 @@ case "$action" in
 		coursetable="$dbroot/${coursename}.db"
 		[ -f "$coursetable" ] || die "E: Course missing (searched $coursetable)"
 		cat "$coursetable"
+		;;
+	update-card)
+		[ "$#" -eq 5 ] || usage
+		coursename="$2"
+		cardhash="$3"
+		lesson="$4"
+		period="$5"
+
+		coursetable="$dbroot/${coursename}.db"
+		[ -f "$coursetable" ] || die "E: Course missing (searched $coursetable)"
+		
+		record=`grep "^$cardhash" "$coursetable"`
+		carddest=$(echo "$record" | awk '{print $2}')
+		new_record="$cardhash\t\t$carddest\t$lesson\t$period"
+		sed -i "s,^$cardhash.*,$new_record," "$coursetable"
 		;;
 	show-card)
 		[ "$#" -eq 2 ] || usage
