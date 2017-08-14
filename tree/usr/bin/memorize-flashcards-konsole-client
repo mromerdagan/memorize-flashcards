@@ -1,0 +1,32 @@
+#!/usr/bin/python2
+"""memorize-flashcards-konsole-client
+Usage:
+    nsg-run-compose-branch <coursename> <num-cards>
+"""
+
+import sys
+from memorize_flashcards.policy import ClassicPolicy as Policy
+from docopt import docopt
+
+arguments = docopt(__doc__)
+
+coursename = arguments['<coursename>']
+try:
+	numcards = int(arguments['<num-cards>'])
+except:
+	print >> sys.stderr, 'E: "num-cards" should be integer'
+	sys.exit(1)
+
+try:
+	p = Policy(coursename)
+except Exception, e:
+	print >> sys.stderr, e.message
+	sys.exit(1)
+
+for i in range(numcards):
+	card = p.fetch_card()
+	print card.content['Q']
+	yn = raw_input('Hit any key to see answer')
+	print card.content['A']
+	yn = raw_input('Did you know the answer? [y/n]')
+	print yn

@@ -1,3 +1,11 @@
+memorize-flashcards (1.0-14) unstable; urgency=medium
+
+  * Start implemnting very simple client
+  * Changed path of python module from ./python to ./python/<pkgname> to ease
+    debug (can export PYTHONPATH=python and see local chagnes)
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Mon, 14 Aug 2017 18:23:54 +0300
+
 memorize-flashcards (1.0-13) unstable; urgency=medium
 
   * Change package layout- python classes are now in module (not in script)

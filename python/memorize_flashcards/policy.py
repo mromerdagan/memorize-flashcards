@@ -1,19 +1,6 @@
 #!/usr/bin/python
-""" Usage:
-	memorize-flashcard fetch <course>
-	memorize-flashcard update <course> <hash> (1|0)
-"""
-
-#import sys
 import subprocess
 import re
-#from docopt import docopt, DocoptExit
-#try:
-#	arguments = docopt(__doc__)
-#except DocoptExit:
-#	print __doc__
-#	sys.exit()
-#print arguments
 
 class Card(object):
 	def __init__(self, hash_, path, lesson, period):
@@ -110,7 +97,7 @@ class Policy(object):
 		courses = [course.strip() for course in courses]
 		courses = filter(bool, courses)
 		if not(self.coursename in courses):
-			raise Exception("E: Course {} is missing from courses db (available courses: {})".format(self.coursename, courses))
+			raise Exception("E: Course {} is missing from courses db (available courses: {})".format(self.coursename, str(courses)))
 
 	def _read_cards(self):
 		# output = subprocess.Popen('memorize-flashcards-course list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
