@@ -11,6 +11,7 @@ me=`basename $0`
 usage() {
 	echo >&2 "Usage:"
 	echo >&2 "    $me create <coursename> [<cardfile>...]"
+	echo >&2 "    $me destroy <coursename>"
 	echo >&2 "    $me add-cards <coursename> <cardfile> [<cardfile>...]"
 	echo >&2 "    $me verify <coursename>"
 	echo >&2 "    $me dump   <coursename> <dir>"
@@ -46,10 +47,26 @@ create_empty_db() {
 
 cards_dir=`read_conf_var CARDSROOT`
 cards_table="$cards_dir/cards.table"
+increase_refcount() {
+	local cardhash="$1"
+	local cardfile="$2"
+	local carddest="$3"
+
+	if grep "^$cardhash" "$cards_table" --quiet; then
+		refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
+		refcount=$((refcount+1))
+		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
+	else
+		echo "$cardhash\t`basename ${carddest}`\t1" >> "$cards_table"
+		echo "I: Copy $cardfile --> $carddest"
+		cp "$cardfile" "$carddest"
+	fi
+}
+
 add_card() {
 	local coursename="$1"
 	local cardfile="$2"
-	local coursetable="$dbroot/${coursename}.db"
+	coursetable="$dbroot/${coursename}.db"
 	[ -f "$coursetable" ] || die "E: Missing course table: $coursetable"
 	if ! [ -f "$cardfile" ]; then
 		echo >&2 "W: Missing card file: $cardfile"
@@ -63,24 +80,30 @@ add_card() {
 	fi
 
 	carddest="$cards_dir/${cardhash}.card"
-	# Copy card file
-	if ! [ -f "$carddest" ]; then # Possibly card already exists in other course, and only needs to be added to card table
-		echo "I: Copy $cardfile --> $carddest"
-		cp "$cardfile" "$carddest"
-	fi
+	# Increase reference count of the card in cards.list, copy card file if needed
+	increase_refcount "$cardhash" "$cardfile" "$carddest"
 
 	# Add card record to course table
 	echo "I: Insert card record ('$carddest', '$cardhash', -, -)"
 	echo "$cardhash\t\t$carddest\t-\t-" >> "$coursetable"
 
-	# Increase reference count of the card in cards.list
-	if grep "^$cardhash" "$cards_table" --quiet; then
-		refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
-		refcount=$((refcount+1))
+}
+
+decrease_refcount() {
+	local cardhash="$1"
+	local carddest="$2"
+	refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
+	refcount=$((refcount-1))
+	if [ "$refcount" -gt 0 ]; then
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
 	else
-		echo "$cardhash\t`basename ${carddest}`\t1" >> "$cards_table"
+		sed -i "/${cardhash}.*/d" $cards_table
+		rm "$carddest"
 	fi
+}
+
+clean_comments() {
+	sed -e 's,#.*,,' -e '/^$/d'
 }
 
 case "$action" in
@@ -94,6 +117,15 @@ case "$action" in
 		for cardfile in "$@"; do
 			add_card "$coursename" "$cardfile"
 		done
+		;;
+	destroy)
+		[ "$#" -eq 2 ] || usage
+		coursename="$2"
+		coursetable="$dbroot/${coursename}.db"
+		cat "$coursetable" | clean_comments | while read cardhash carddest lesson period; do 
+			decrease_refcount "$cardhash" "$carddest"
+		done
+		rm "$coursetable"
 		;;
 	add-cards)
 		[ "$#" -ge 3 ] || usage

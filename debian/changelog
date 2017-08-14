@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-12) unstable; urgency=medium
+
+  * memorize-flashcards-course:
+    - New action: destroy- removes course including: decrease refcounts in
+      cards table, remove cardfiles if refcount becomes zero, removes course
+      file
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Mon, 14 Aug 2017 15:22:20 +0300
+
 memorize-flashcards (1.0-11) unstable; urgency=medium
 
   * memorize-flashcards-course:
