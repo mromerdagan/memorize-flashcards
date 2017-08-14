@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-13) unstable; urgency=medium
+
+  * Change package layout- python classes are now in module (not in script)
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Mon, 14 Aug 2017 17:58:20 +0300
+
 memorize-flashcards (1.0-12) unstable; urgency=medium
 
   * memorize-flashcards-course:
