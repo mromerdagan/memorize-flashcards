@@ -13,20 +13,21 @@ arguments = docopt(__doc__)
 coursename = arguments['<coursename>']
 try:
 	numcards = int(arguments['<num-cards>'])
-except:
+except ValueError:
 	print >> sys.stderr, 'E: "num-cards" should be integer'
 	sys.exit(1)
 
 try:
-	p = Policy(coursename)
+	policy = Policy(coursename)
 except Exception, e:
 	print >> sys.stderr, e.message
 	sys.exit(1)
 
 for i in range(numcards):
-	card = p.fetch_card()
-	print card.content['Q']
-	yn = raw_input('Hit any key to see answer')
-	print card.content['A']
+	card = policy.fetch_card()
+	print card.get_key_val('Q')
+	_ = raw_input('Hit any key to see answer')
+	print card.get_key_val('A')
 	yn = raw_input('Did you know the answer? [y/n]')
-	print yn
+	policy.update_card(card, True if yn.lower() == 'y' else False)
+policy.write_changes()

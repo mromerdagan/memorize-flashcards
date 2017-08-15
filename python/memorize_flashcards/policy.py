@@ -75,8 +75,12 @@ class Card(object):
 			first_line = first_line[len(header)+2:]
 			group[0] = first_line
 			ret[header] = "\n".join(group)
-
 		return ret
+
+	def get_key_val(self, key):
+		if not(key in self.content):
+			raise Exception("Key '{}' is missing from card content".format(key))
+		return self.content[key]
 
 
 class Policy(object):
@@ -97,7 +101,10 @@ class Policy(object):
 		courses = [course.strip() for course in courses]
 		courses = filter(bool, courses)
 		if not(self.coursename in courses):
-			raise Exception("E: Course {} is missing from courses db (available courses: {})".format(self.coursename, str(courses)))
+			raise Exception('E: Course "{}" is missing from courses db (available courses: {})'.format(\
+				self.coursename, \
+				" ,".join(['"{}"'.format(c) for c in courses]) \
+				))
 
 	def _read_cards(self):
 		# output = subprocess.Popen('memorize-flashcards-course list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -121,7 +128,21 @@ class Policy(object):
 
 	## Public methods
 	def write_changes(self):
-		raise NotImplementedError()
+		for card in self.cards:
+			if (card.lesson == None):
+				continue
+			cmd = 'memorize-flashcards-course update-card {} {} {} {}'.format(\
+				self.coursename, \
+				card.hash_, \
+				card.lesson, \
+				card.period, \
+				)
+			try:
+				output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			except Exception, e:
+				print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+				raise
+			_, _ = output.communicate()
 
 	def sort_cards(self):
 		self.cards.sort(key=self.sorting_key)
@@ -193,13 +214,13 @@ class ClassicPolicy(Policy):
 			card.lesson += 1
 			card.period = 1
 
-if __name__ == "__main__":
-	p = ClassicPolicy('perl-lamma')
-	#print "\n".join([c.__repr__() for c in p.cards])
-	#print p.course_table_str()
-	while True:
-		c = p.fetch_card()
-		print c.content
-		p.update_card(c, True)
-		raw_input()
+#if __name__ == "__main__":
+#	p = ClassicPolicy('perl-lamma')
+#	#print "\n".join([c.__repr__() for c in p.cards])
+#	#print p.course_table_str()
+#	while True:
+#		c = p.fetch_card()
+#		print c.content
+#		p.update_card(c, True)
+#		raw_input()
 

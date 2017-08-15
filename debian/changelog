@@ -1,3 +1,10 @@
+memorize-flashcards (1.0-15) unstable; urgency=medium
+
+  * Implement write_changes() in class Policy
+  * Finish prototype konsole client
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 15 Aug 2017 10:09:42 +0300
+
 memorize-flashcards (1.0-14) unstable; urgency=medium
 
   * Start implemnting very simple client
