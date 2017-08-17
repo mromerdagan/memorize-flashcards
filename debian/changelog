@@ -1,3 +1,10 @@
+memorize-flashcards (1.0-16) unstable; urgency=medium
+
+  * debian/control: change arch from 'any' to 'all'. It should have been this
+    way in the first place...
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Thu, 17 Aug 2017 11:59:43 +0300
+
 memorize-flashcards (1.0-15) unstable; urgency=medium
 
   * Implement write_changes() in class Policy

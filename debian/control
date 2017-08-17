@@ -7,7 +7,7 @@ Standards-Version: 3.9.5
 Homepage: https://mromerdagan.wixsite.com/omerdagan
 
 Package: memorize-flashcards
-Architecture: any
+Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Flash cards memorization trainer (knosole app)
  Konsole flash cards memorization trainer. The key feature
