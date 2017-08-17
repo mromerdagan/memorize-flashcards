@@ -1,3 +1,13 @@
+memorize-flashcards (1.0-17) unstable; urgency=medium
+
+  * memorize-flashcards-course: new action: remove-card- removes card from
+    course, decreasing refcount, and possibly removes card file.
+  * in decrease_refcount: removed card_dest param. Instead, calculate file
+    location from hash. Also, add check that hash is actucally exists in cards
+    table
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Thu, 17 Aug 2017 14:04:27 +0300
+
 memorize-flashcards (1.0-16) unstable; urgency=medium
 
   * debian/control: change arch from 'any' to 'all'. It should have been this

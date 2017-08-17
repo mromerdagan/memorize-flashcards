@@ -2,8 +2,12 @@
 
 set -e
 
-die() {
+warn() {
 	echo "$@" >&2
+}
+
+die() {
+	warn "$@"
 	exit 1
 }
 
@@ -13,6 +17,7 @@ usage() {
 	echo >&2 "    $me create <coursename> [<cardfile>...]"
 	echo >&2 "    $me destroy <coursename>"
 	echo >&2 "    $me add-cards <coursename> <cardfile> [<cardfile>...]"
+	echo >&2 "    $me remove-card <coursename> <cardhash>"
 	echo >&2 "    $me verify <coursename>"
 	echo >&2 "    $me dump   <coursename> <dir>"
 	echo >&2 "    $me list"
@@ -86,13 +91,16 @@ add_card() {
 	# Add card record to course table
 	echo "I: Insert card record ('$carddest', '$cardhash', -, -)"
 	echo "$cardhash\t\t$carddest\t-\t-" >> "$coursetable"
-
 }
 
-decrease_refcount() {
+decrease_refcount(){
 	local cardhash="$1"
-	local carddest="$2"
+	carddest=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
 	refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
+	if [ -z "$carddest" ]; then
+		warn "W: Card '$cardhash' is missing from '$cards_table'"
+		return
+	fi
 	refcount=$((refcount-1))
 	if [ "$refcount" -gt 0 ]; then
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
@@ -100,6 +108,25 @@ decrease_refcount() {
 		sed -i "/${cardhash}.*/d" $cards_table
 		rm "$carddest"
 	fi
+}
+
+remove_card() {
+	local coursename="$1"
+	local cardhash="$2"
+	coursetable="$dbroot/${coursename}.db"
+	[ -f "$coursetable" ] || die "E: Missing course table: $coursetable"
+
+	if ! grep --silent "^$cardhash" "$coursetable"; then # Card is not in course table
+		echo >&2 "E: '$cardhash' does not exist exists in course table"
+		return
+	fi
+
+	# Decrease reference count of the card in cards.list, remove card file if needed
+	decrease_refcount "$cardhash"
+
+	# Remove card record from course table
+	echo "I: Removing card record from course table: $coursetable"
+	sed -i "/^${cardhash}.*/d" $coursetable
 }
 
 clean_comments() {
@@ -123,7 +150,7 @@ case "$action" in
 		coursename="$2"
 		coursetable="$dbroot/${coursename}.db"
 		cat "$coursetable" | clean_comments | while read cardhash carddest lesson period; do 
-			decrease_refcount "$cardhash" "$carddest"
+			decrease_refcount "$cardhash"
 		done
 		rm "$coursetable"
 		;;
@@ -137,6 +164,12 @@ case "$action" in
 		for cardfile in "$@"; do
 			add_card "$coursename" "$cardfile"
 		done
+		;;
+	remove-card)
+		[ "$#" -eq 3 ] || usage
+		coursename="$2"
+		cardhash="$3"
+		remove_card "$coursename" "$cardhash"
 		;;
 	verify)
 		[ "$#" -eq 2 ] || usage
