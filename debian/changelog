@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-18) unstable; urgency=medium
+
+  * memorize-flashcards-konsole-client: Changed prints so it is more clear
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sat, 19 Aug 2017 12:33:42 +0300
+
 memorize-flashcards (1.0-17) unstable; urgency=medium
 
   * memorize-flashcards-course: new action: remove-card- removes card from
