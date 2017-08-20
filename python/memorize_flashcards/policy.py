@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import subprocess
 import re
+import random
 
 class Card(object):
 	def __init__(self, hash_, path, lesson, period):
@@ -179,7 +180,7 @@ class ClassicPolicy(Policy):
 	def _fill_course(self, index):
 		while (len(self._get_lesson(index)) < self.LESSON_MIN_LENGTH):
 			try:
-				freshcard = self._fresh_cards()[0]
+				freshcard = random.choice(self._fresh_cards())
 			except IndexError:
 				break
 			freshcard.lesson = index

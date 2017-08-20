@@ -1,3 +1,10 @@
+memorize-flashcards (1.0-19) unstable; urgency=medium
+
+  * Policy.py: Add random element when pulling new fresh card: instead of
+    taking the first card of the fresh cards take random one.
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sun, 20 Aug 2017 14:36:29 +0300
+
 memorize-flashcards (1.0-18) unstable; urgency=medium
 
   * memorize-flashcards-konsole-client: Changed prints so it is more clear
