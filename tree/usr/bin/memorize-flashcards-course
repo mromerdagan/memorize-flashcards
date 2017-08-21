@@ -103,8 +103,10 @@ decrease_refcount(){
 	fi
 	refcount=$((refcount-1))
 	if [ "$refcount" -gt 0 ]; then
+		echo "I: Decreasing reference count in '$cards_table'"
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
 	else
+		echo "I: Reference count reached 0, removing from '$cards_table', and removing '$carddest'"
 		sed -i "/${cardhash}.*/d" $cards_table
 		rm "$carddest"
 	fi

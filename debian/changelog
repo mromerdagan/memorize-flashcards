@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-20) unstable; urgency=medium
+
+  * memorize-flashcards-course: on removing card, add helpful prints
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Mon, 21 Aug 2017 15:29:05 +0300
+
 memorize-flashcards (1.0-19) unstable; urgency=medium
 
   * Policy.py: Add random element when pulling new fresh card: instead of
