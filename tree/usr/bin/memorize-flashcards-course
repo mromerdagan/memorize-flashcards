@@ -95,19 +95,22 @@ add_card() {
 
 decrease_refcount(){
 	local cardhash="$1"
-	carddest=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
 	refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
-	if [ -z "$carddest" ]; then
+	if [ -z "$refcount" ]; then
 		warn "W: Card '$cardhash' is missing from '$cards_table'"
 		return
 	fi
+	carddest_basename=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
+	carddest="`dirname $cards_table`/$carddest_basename"
 	refcount=$((refcount-1))
 	if [ "$refcount" -gt 0 ]; then
 		echo "I: Decreasing reference count in '$cards_table'"
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
 	else
-		echo "I: Reference count reached 0, removing from '$cards_table', and removing '$carddest'"
+		echo "I: Reference count reached 0"
+		echo "I: \t>removing from '$cards_table'"
 		sed -i "/${cardhash}.*/d" $cards_table
+		echo "I: \t>removing from '$carddest'"
 		rm "$carddest"
 	fi
 }

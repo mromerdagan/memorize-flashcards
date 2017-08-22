@@ -1,3 +1,10 @@
+memorize-flashcards (1.0-21) unstable; urgency=medium
+
+  * memorize-flashcards-course: on removing card- fix decrease_refcount 
+    routine
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 22 Aug 2017 10:39:10 +0300
+
 memorize-flashcards (1.0-20) unstable; urgency=medium
 
   * memorize-flashcards-course: on removing card, add helpful prints
