@@ -1,3 +1,20 @@
+memorize-flashcards (1.0-22) unstable; urgency=medium
+
+  * policy.py: in ClassicPolicy- introduced new class field- used_pile.
+    Now, on fetch card card is removed from policy.cards, and on update()
+    it is put to used_pile. When done (on write_changes()), used_pile is poured
+    back to policy.cards.
+    This prevents from card that was seen in current lesson to be seen again
+    in the same lesson becuase the user didn't know it and current lesson 
+    contained very few cards
+  * Note to self- keep in mind the semantics: on fetch_card, card is removed
+    from policy.cards, and it is "out in the air" untill update() is called.
+  * Also, changed the konsole client so if given answer other than 'y', 'n'
+    when presented a card, show the question again (no default, to avoid
+    writing boolshit to the card value)
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Wed, 06 Sep 2017 18:15:38 +0300
+
 memorize-flashcards (1.0-21) unstable; urgency=medium
 
   * memorize-flashcards-course: on removing card- fix decrease_refcount 

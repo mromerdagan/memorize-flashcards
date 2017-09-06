@@ -29,6 +29,8 @@ for i in range(numcards):
 	print card.get_key_val('Q')
 	_ = raw_input('')
 	print card.get_key_val('A')
-	yn = raw_input('Did you know the answer? [y/n]')
+	yn = ''
+	while (yn.lower() != 'y') and (yn.lower() != 'n'):
+		yn = raw_input('Did you know the answer? [y/n]')
 	policy.update_card(card, True if yn.lower() == 'y' else False)
 policy.write_changes()

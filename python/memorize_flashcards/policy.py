@@ -167,8 +167,9 @@ class Policy(object):
 class ClassicPolicy(Policy):
 	def __init__(self, coursename):
 		Policy.__init__(self, coursename)
-		self.LESSON_MIN_LENGTH = 10
+		self.LESSON_MIN_LENGTH = 5
 		self.sort_cards()
+		self.used_pile = [] # Will hold cards that were seen in current session
 
 	## Helpers
 	def _get_lesson(self, index):
@@ -195,6 +196,9 @@ class ClassicPolicy(Policy):
 					card.lesson -= diff
 
 	def _fix_first_lesson(self):
+		if (len(self.cards) == 0):
+			self.cards = self.used_pile
+			self.used_pile = []
 		self.sort_cards()
 		if self.cards[0].lesson == 1:
 			return
@@ -203,17 +207,28 @@ class ClassicPolicy(Policy):
 
 	## Public methods, derived from super class
 	def fetch_card(self):
-		self.sort_cards()
 		self._fix_first_lesson()
-		return self.cards[0]
+		card = self.cards.pop(0)
+		return card
 
 	def update_card(self, card, value):
+		if (card in self.cards) or (card in self.used_pile):
+			raise Exception("Illegal state- card must be out of pile and used pile when updated")
+		#print "D: card lesson before: {}".format(card.lesson)
 		if (value == True):
 			card.lesson += card.period
 			card.period *= 2
 		else: # value == False
 			card.lesson += 1
 			card.period = 1
+		self.used_pile.append(card)
+		#print "D: card lesson after: {}".format(card.lesson)
+	
+	def write_changes(self): # Override write_changes so I can combine self.cards and self.used_pile before writing
+		self.cards += self.used_pile
+		self.used_pile = []
+		#super(ClassicPolicy, self).write_changes()
+		Policy.write_changes(self)
 
 #if __name__ == "__main__":
 #	p = ClassicPolicy('perl-lamma')
