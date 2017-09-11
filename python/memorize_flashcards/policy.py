@@ -3,6 +3,12 @@ import subprocess
 import re
 import random
 
+class CardException(Exception):
+	pass
+
+class EmptyCardException(CardException):
+	pass
+
 class Card(object):
 	def __init__(self, hash_, path, lesson, period):
 		self.hash_ = hash_
@@ -53,8 +59,11 @@ class Card(object):
 		content = content.split("\n")
 		content = filter(bool, content) # Remove possible empty lines
 		# Sanity: make sure line starts with header
+		if not(content):
+			raise EmptyCardException("Card empty? ({})".format(self.path))
+		# Sanity: make sure line starts with header
 		if not(self._is_header_line(content[0])):
-			raise Exception("Card content looks bad ({})".format(self.hash_))
+			raise Exception("Card content looks bad ({})".format(self.path))
 
 		## Split into headers groups
 		content_groups = []

@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-23) unstable; urgency=medium
+
+  * Add test directory, currently only one test
+  * Add exception when initializing a 'Card' object to verify that it is not
+    empty
+  * Switch buildsystem to 'pybuild' (debian/rules)
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Mon, 11 Sep 2017 14:10:36 +0300
+
 memorize-flashcards (1.0-22) unstable; urgency=medium
 
   * policy.py: in ClassicPolicy- introduced new class field- used_pile.
