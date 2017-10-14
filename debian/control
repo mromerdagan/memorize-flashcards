@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Omer Dagan <mr.omer.dagan@gmail.com>
 Build-Depends: debhelper (>= 9), rsync, dh-python, python-all
 Standards-Version: 3.9.5
-Homepage: https://mromerdagan.wixsite.com/omerdagan
+Homepage: https://github.com/mromerdagan/memorize-flashcards
 
 Package: memorize-flashcards
 Architecture: all

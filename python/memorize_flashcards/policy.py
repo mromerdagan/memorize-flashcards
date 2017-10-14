@@ -162,7 +162,10 @@ class Policy(object):
 		fomatter = "{:<35} {:<74} {:<7} {}"
 		ret += fomatter.format('# Hash', 'Path', 'Lesson', 'Period') + "\n"
 		for card in sorted(self.cards, key=self.sorting_key):
-			ret += fomatter.format(card.hash_, card.path, card.lesson if card.lesson else '-', card.period if card.period else '-') + "\n"
+			ret += fomatter.format(card.hash_, \
+				card.path, card.lesson if card.lesson else '-', \
+				card.period if card.period else '-') + \
+				"\n"
 		ret.strip()
 		return ret
 
