@@ -8,7 +8,8 @@ Homepage: https://github.com/mromerdagan/memorize-flashcards
 
 Package: memorize-flashcards
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ python-docopt
 Description: Flash cards memorization trainer (knosole app)
  Konsole flash cards memorization trainer. The key feature
  is that the trainer chalenge you more with the cards you
