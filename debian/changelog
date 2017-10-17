@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-26) unstable; urgency=medium
+
+  * memorize-flashcards-course: New action: edit-card.
+    This enables to edit existing card. The action will open default editor,
+    then after saving the new card, will add it to all relevant courses, remove
+    the old one, while keeping the (lesson, period) values
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 17 Oct 2017 09:35:52 +0300
+
 memorize-flashcards (1.0-25) unstable; urgency=medium
 
   * Add python-docopt dependency

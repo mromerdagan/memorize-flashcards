@@ -23,6 +23,7 @@ usage() {
 	echo >&2 "    $me list"
 	echo >&2 "    $me show-course <coursename>"
 	echo >&2 "    $me update-card <coursename> <cardhash> <new-lesson-val> <new-period-val>"
+	echo >&2 "    $me edit-card <coursename>"
 	echo >&2 "    $me show-card <cardhash>"
 	exit 1
 }
@@ -34,7 +35,7 @@ conf="/etc/memorize-flashcards/conf"
 [ -e "$conf" ] || die "E: Missing configuration: $conf"
 
 read_conf_var() {
-	varname="$1"
+	local varname="$1"
 	grep "^$varname\s\+" "$conf" | awk '{print $2}'
 }
 
@@ -58,7 +59,7 @@ increase_refcount() {
 	local carddest="$3"
 
 	if grep "^$cardhash" "$cards_table" --quiet; then
-		refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
+		local refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
 		refcount=$((refcount+1))
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
 	else
@@ -71,20 +72,20 @@ increase_refcount() {
 add_card() {
 	local coursename="$1"
 	local cardfile="$2"
-	coursetable="$dbroot/${coursename}.db"
+	local coursetable="$dbroot/${coursename}.db"
 	[ -f "$coursetable" ] || die "E: Missing course table: $coursetable"
 	if ! [ -f "$cardfile" ]; then
 		echo >&2 "W: Missing card file: $cardfile"
 		return
 	fi
 
-	cardhash=`md5sum "$cardfile" | awk '{print $1}'`
+	local cardhash=`md5sum "$cardfile" | awk '{print $1}'`
 	if grep --silent "^$cardhash" "$coursetable"; then # Card already exists in course table, nothing to do
 		echo >&2 "W: $cardfile already exists in course table"
 		return
 	fi
 
-	carddest="$cards_dir/${cardhash}.card"
+	local carddest="$cards_dir/${cardhash}.card"
 	# Increase reference count of the card in cards.list, copy card file if needed
 	increase_refcount "$cardhash" "$cardfile" "$carddest"
 
@@ -93,16 +94,16 @@ add_card() {
 	echo "$cardhash\t\t$carddest\t-\t-" >> "$coursetable"
 }
 
-decrease_refcount(){
+decrease_refcount() {
 	local cardhash="$1"
-	refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
+	local refcount=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $3 }' "$cards_table"`
 	if [ -z "$refcount" ]; then
 		warn "W: Card '$cardhash' is missing from '$cards_table'"
 		return
 	fi
-	carddest_basename=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
-	carddest="`dirname $cards_table`/$carddest_basename"
-	refcount=$((refcount-1))
+	local carddest_basename=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
+	local carddest="`dirname $cards_table`/$carddest_basename"
+	local refcount=$((refcount-1))
 	if [ "$refcount" -gt 0 ]; then
 		echo "I: Decreasing reference count in '$cards_table'"
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
@@ -115,10 +116,25 @@ decrease_refcount(){
 	fi
 }
 
+update_card() {
+	local coursename="$1"
+	local cardhash="$2"
+	local lesson="$3"
+	local period="$4"
+
+	local coursetable="$dbroot/${coursename}.db"
+	[ -f "$coursetable" ] || die "E: Course missing (searched $coursetable)"
+	local record="" # For unknown reason I failed to init local record with grep at one line
+	record=$(grep "^$cardhash" "$coursetable")
+	local carddest=$(echo "$record" | awk '{print $2}')
+	local new_record="$cardhash\t\t$carddest\t$lesson\t$period"
+	sed -i "s,^$cardhash.*,$new_record," "$coursetable"
+}
+
 remove_card() {
 	local coursename="$1"
 	local cardhash="$2"
-	coursetable="$dbroot/${coursename}.db"
+	local coursetable="$dbroot/${coursename}.db"
 	[ -f "$coursetable" ] || die "E: Missing course table: $coursetable"
 
 	if ! grep --silent "^$cardhash" "$coursetable"; then # Card is not in course table
@@ -132,6 +148,43 @@ remove_card() {
 	# Remove card record from course table
 	echo "I: Removing card record from course table: $coursetable"
 	sed -i "/^${cardhash}.*/d" $coursetable
+}
+
+edit_card() {
+	local cardhash="$1"
+	grep "^$cardhash" "$cards_table" --quiet || die "E: Card not found in cards table ($cards_table)"
+
+	local cardbase=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
+	local cardfile="$cards_dir/$cardbase"
+	[ -f "$cardfile" ] || die "E: Card table pointing to missing file: $cardfile"
+
+	local modifiedcard=`mktemp`
+	cp "$cardfile" "$modifiedcard"
+	"$EDITOR" "$modifiedcard"
+	local modifiedhash=`md5sum "$modifiedcard" | awk '{print $1}'`
+	if [ "$modifiedhash" = "$cardhash" ]; then
+		echo "W: Card hasn't changed. Nothing to do"
+	else
+		for coursetable in `ls "$dbroot"/*.db`; do
+			local coursename=`echo $coursetable | sed -e "s,$dbroot/,," -e 's,.db$,,'`
+			grep --silent "^$cardhash" "$coursetable" || continue
+
+			local old_record=""
+			old_record=`grep "^$cardhash" "$coursetable"`
+			# Preserve existing (lesson, period) values
+			local lesson=$(echo "$old_record" | awk '{print $3}')
+			local period=$(echo "$old_record" | awk '{print $4}')
+
+			echo "I: Adding  $modifiedhash to $coursename"
+			add_card "$coursename" "$modifiedcard"
+
+			echo "I: Updating  $modifiedhash ($lesson, $period)"
+			update_card "$coursename" "$modifiedhash" "$lesson" "$period"
+
+			echo "I: Removing: $cardhash"
+			remove_card "$coursename" "$cardhash"
+		done
+	fi
 }
 
 clean_comments() {
@@ -204,13 +257,14 @@ case "$action" in
 		lesson="$4"
 		period="$5"
 
-		coursetable="$dbroot/${coursename}.db"
-		[ -f "$coursetable" ] || die "E: Course missing (searched $coursetable)"
-		
-		record=`grep "^$cardhash" "$coursetable"`
-		carddest=$(echo "$record" | awk '{print $2}')
-		new_record="$cardhash\t\t$carddest\t$lesson\t$period"
-		sed -i "s,^$cardhash.*,$new_record," "$coursetable"
+		update_card "$coursename" "$cardhash" "$lesson" "$period"
+		;;
+	edit-card)
+		[ "$#" -eq 2 ] || usage
+		cardhash="$2"
+		[ -n "$EDITOR" ] || die "E: No deafult editor (EDITOR env variable empty)"
+		[ -x "`which $EDITOR`" ] || die "E: '$EDITOR' is not execuable (check EDITOR env variable)"
+		edit_card "$cardhash"
 		;;
 	show-card)
 		[ "$#" -eq 2 ] || usage
