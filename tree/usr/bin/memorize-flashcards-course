@@ -160,6 +160,7 @@ edit_card() {
 
 	local modifiedcard=`mktemp`
 	cp "$cardfile" "$modifiedcard"
+	chmod 644 "$modifiedcard"
 	"$EDITOR" "$modifiedcard"
 	local modifiedhash=`md5sum "$modifiedcard" | awk '{print $1}'`
 	if [ "$modifiedhash" = "$cardhash" ]; then
