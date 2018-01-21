@@ -1,3 +1,12 @@
+memorize-flashcards (1.0-29) unstable; urgency=medium
+
+  * Add get_printable(key) function to Card. This evaluates the string as
+    should appear (for example, lines which only content is ' .' are replaced
+    with blank lines.
+  * Update console client accordingly
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sun, 21 Jan 2018 11:11:54 +0200
+
 memorize-flashcards (1.0-28) unstable; urgency=medium
 
   * memorize-flashcards-course: On edit card, set edited permissions to 644

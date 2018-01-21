@@ -91,7 +91,14 @@ class Card(object):
 		if not(key in self.content):
 			raise Exception("Key '{}' is missing from card content".format(key))
 		return self.content[key]
-
+	
+	def get_printable(self, key):
+		raw = self.get_key_val(key)
+		lines = raw.split('\n')
+		lines = map(str.rstrip, lines)
+		lines = map(lambda line: re.sub(r"^\s", "", line), lines)
+		lines = map(lambda line: re.sub(r"^\.$", "", line), lines)
+		return '\n'.join(lines)
 
 class Policy(object):
 	def __init__(self, coursename):

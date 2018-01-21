@@ -26,9 +26,9 @@ except Exception, e:
 for i in range(numcards):
 	card = policy.fetch_card()
 	print "----------------------- {}".format(card.hash_)
-	print card.get_key_val('Q')
+	print card.get_printable('Q')
 	_ = raw_input('')
-	print card.get_key_val('A')
+	print card.get_printable('A')
 	yn = ''
 	while (yn.lower() != 'y') and (yn.lower() != 'n'):
 		yn = raw_input('Did you know the answer? [y/n]')
