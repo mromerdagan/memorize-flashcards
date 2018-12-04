@@ -38,7 +38,7 @@ class Card(object):
 			)
 
 	def _get_raw_content(self):
-		cmd = 'memorize-flashcards-course show-card {}'.format(self.hash_)
+		cmd = 'memorize-flashcards-admin show-card {}'.format(self.hash_)
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		except Exception, e:
@@ -107,7 +107,7 @@ class Policy(object):
 		self.cards = self._read_cards()
 
 	def _verify_course(self):
-		cmd = 'memorize-flashcards-course list'
+		cmd = 'memorize-flashcards-admin list'
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		except Exception, e:
@@ -124,8 +124,8 @@ class Policy(object):
 				))
 
 	def _read_cards(self):
-		# output = subprocess.Popen('memorize-flashcards-course list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		cmd = 'memorize-flashcards-course show-course {}'.format(self.coursename)
+		# output = subprocess.Popen('memorize-flashcards-admin list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		cmd = 'memorize-flashcards-admin show-course {}'.format(self.coursename)
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		except Exception, e:
@@ -148,7 +148,7 @@ class Policy(object):
 		for card in self.cards:
 			if (card.lesson == None):
 				continue
-			cmd = 'memorize-flashcards-course update-card {} {} {} {}'.format(\
+			cmd = 'memorize-flashcards-admin update-card {} {} {} {}'.format(\
 				self.coursename, \
 				card.hash_, \
 				card.lesson, \

@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-31) unstable; urgency=medium
+
+  * Folowing last commit- adjust calls to admin tool new name
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 04 Dec 2018 10:43:27 +0200
+
 memorize-flashcards (1.0-30) unstable; urgency=medium
 
   * Rename script: memorize-flashcards-course -> memorize-flashcards-admin
