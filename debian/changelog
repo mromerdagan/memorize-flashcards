@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-30) unstable; urgency=medium
+
+  * Rename script: memorize-flashcards-course -> memorize-flashcards-admin
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Tue, 04 Dec 2018 10:24:38 +0200
+
 memorize-flashcards (1.0-29) unstable; urgency=medium
 
   * Add get_printable(key) function to Card. This evaluates the string as
