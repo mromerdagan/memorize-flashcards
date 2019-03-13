@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-32) unstable; urgency=medium
+
+  * Make app and package Python3
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Wed, 13 Mar 2019 12:20:51 +0200
+
 memorize-flashcards (1.0-31) unstable; urgency=medium
 
   * Folowing last commit- adjust calls to admin tool new name
