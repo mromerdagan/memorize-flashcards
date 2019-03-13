@@ -3,9 +3,6 @@
 Usage:
     nsg-run-compose-branch <coursename> <num-cards>
 """
-from __future__ import print_function
-from builtins import input
-
 import sys
 from memorize_flashcards.policy import ClassicPolicy as Policy
 from docopt import docopt
