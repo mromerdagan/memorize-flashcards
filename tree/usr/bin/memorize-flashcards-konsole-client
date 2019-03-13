@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 """memorize-flashcards-konsole-client
 Usage:
     nsg-run-compose-branch <coursename> <num-cards>
