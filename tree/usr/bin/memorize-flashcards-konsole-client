@@ -3,6 +3,8 @@
 Usage:
     nsg-run-compose-branch <coursename> <num-cards>
 """
+from __future__ import print_function
+from builtins import input
 
 import sys
 from memorize_flashcards.policy import ClassicPolicy as Policy
@@ -14,23 +16,23 @@ coursename = arguments['<coursename>']
 try:
 	numcards = int(arguments['<num-cards>'])
 except ValueError:
-	print >> sys.stderr, 'E: "num-cards" should be integer'
+	print('E: "num-cards" should be integer', file=sys.stderr)
 	sys.exit(1)
 
 try:
 	policy = Policy(coursename)
-except Exception, e:
-	print >> sys.stderr, e.message
+except Exception as e:
+	print(e.message, file=sys.stderr)
 	sys.exit(1)
 
 for i in range(numcards):
 	card = policy.fetch_card()
-	print "----------------------- {}".format(card.hash_)
-	print card.get_printable('Q')
-	_ = raw_input('')
-	print card.get_printable('A')
+	print("----------------------- {}".format(card.hash_))
+	print(card.get_printable('Q'))
+	_ = input('')
+	print(card.get_printable('A'))
 	yn = ''
 	while (yn.lower() != 'y') and (yn.lower() != 'n'):
-		yn = raw_input('Did you know the answer? [y/n]')
+		yn = input('Did you know the answer? [y/n]')
 	policy.update_card(card, True if yn.lower() == 'y' else False)
 policy.write_changes()

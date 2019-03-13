@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import subprocess
 import re
 import random
@@ -41,10 +42,11 @@ class Card(object):
 		cmd = 'memorize-flashcards-admin show-card {}'.format(self.hash_)
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		except Exception, e:
-			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+		except Exception as e:
+			print("E: Failed running command: {}. Got exception: {}".format(cmd, e))
 			raise
 		out, _ = output.communicate()
+		out = out.decode('utf-8')
 		return out
 
 	@staticmethod
@@ -57,7 +59,7 @@ class Card(object):
 		ret = {}
 		content = self._get_raw_content()
 		content = content.split("\n")
-		content = filter(bool, content) # Remove possible empty lines
+		content = [line for line in content if line] # Remove possible empty lines
 		# Sanity: make sure line starts with header
 		if not(content):
 			raise EmptyCardException("Card empty? ({})".format(self.path))
@@ -91,13 +93,13 @@ class Card(object):
 		if not(key in self.content):
 			raise Exception("Key '{}' is missing from card content".format(key))
 		return self.content[key]
-	
+
 	def get_printable(self, key):
 		raw = self.get_key_val(key)
 		lines = raw.split('\n')
-		lines = map(str.rstrip, lines)
-		lines = map(lambda line: re.sub(r"^\s", "", line), lines)
-		lines = map(lambda line: re.sub(r"^\.$", "", line), lines)
+		lines = [line.rstrip() for line in lines]
+		lines = [re.sub(r"^\s", "", line) for line in lines]
+		lines = [re.sub(r"^\.$", "", line) for line in lines]
 		return '\n'.join(lines)
 
 class Policy(object):
@@ -110,13 +112,14 @@ class Policy(object):
 		cmd = 'memorize-flashcards-admin list'
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		except Exception, e:
-			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+		except Exception as e:
+			print("E: Failed running command: {}. Got exception: {}".format(cmd, e))
 			raise
 		out, _ = output.communicate()
+		out = out.decode('utf-8')
 		courses = out.split('\n')
 		courses = [course.strip() for course in courses]
-		courses = filter(bool, courses)
+		courses = [course for course in courses if course]
 		if not(self.coursename in courses):
 			raise Exception('E: Course "{}" is missing from courses db (available courses: {})'.format(\
 				self.coursename, \
@@ -128,14 +131,15 @@ class Policy(object):
 		cmd = 'memorize-flashcards-admin show-course {}'.format(self.coursename)
 		try:
 			output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		except Exception, e:
-			print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+		except Exception as e:
+			print("E: Failed running command: {}. Got exception: {}".format(cmd, e))
 			raise
 		out, _ = output.communicate()
+		out = out.decode('utf-8')
 		out = out.split('\n')
-		out = map(lambda s: s.strip(), out)
-		out = map(lambda s: s[:s.find('#')] if '#' in s else s, out)
-		out = filter(bool, out)
+		out = [re.sub(r"#.*", "", s) for s in out]
+		out = [s.strip() for s in out]
+		out = [s for s in out if s]
 		out = [Card(*line.split()) for line in out]
 		return out
 
@@ -156,8 +160,8 @@ class Policy(object):
 				)
 			try:
 				output = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-			except Exception, e:
-				print "E: Failed running command: {}. Got exception: {}".format(cmd, e)
+			except Exception as e:
+				print("E: Failed running command: {}. Got exception: {}".format(cmd, e))
 				raise
 			_, _ = output.communicate()
 
@@ -242,7 +246,7 @@ class ClassicPolicy(Policy):
 			card.period = 1
 		self.used_pile.append(card)
 		#print "D: card lesson after: {}".format(card.lesson)
-	
+
 	def write_changes(self): # Override write_changes so I can combine self.cards and self.used_pile before writing
 		self.cards += self.used_pile
 		self.used_pile = []
@@ -258,4 +262,3 @@ class ClassicPolicy(Policy):
 #		print c.content
 #		p.update_card(c, True)
 #		raw_input()
-
