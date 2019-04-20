@@ -1,0 +1,3 @@
+include *.txt
+include tree/etc/memorize-flashcards/conf
+include tree/usr/bin/*
