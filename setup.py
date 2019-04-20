@@ -14,4 +14,6 @@ setup(name='memorize_flashcards',
     	('/usr/bin', glob.glob('tree/usr/bin/*')),
     	('/etc/memorize-flashcards', glob.glob('tree/etc/memorize-flashcards/*')),
     ],
+    license='GPL-3.0',
+    long_description=open('README.txt').read(),
 )
