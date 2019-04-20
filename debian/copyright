@@ -1,10 +1,9 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: memorize-flashcards
-Source: <url://example.com>
+Source: git@github.com:mromerdagan/memorize-flashcards.git
 
 Files: *
 Copyright: 2017 Omer Dagan <mr.omer.dagan@gmail.com>
-           <years> <likewise for another author>
 License: GPL-3.0+
 
 Files: debian/*
