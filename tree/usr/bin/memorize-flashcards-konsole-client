@@ -30,7 +30,15 @@ def cleanup(signum, frame):
 
 signal.signal(signal.SIGINT, cleanup)
 
-for i in range(numcards):
+def gen_cards(policy, numcards=0):
+	i = 0
+	while True:
+		yield policy.fetch_card()
+		i += 1
+		if i == numcards: # numcards == 0 would generate cards infinately
+			break
+
+for card in gen_cards(policy, numcards):
 	card = policy.fetch_card()
 	print("----------------------- {}".format(card.hash_))
 	print(card.get_printable('Q'))
