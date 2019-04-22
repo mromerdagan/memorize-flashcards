@@ -4,6 +4,7 @@ Usage:
     nsg-run-compose-branch <coursename> <num-cards>
 """
 import sys
+import signal
 from memorize_flashcards.policy import ClassicPolicy as Policy
 from docopt import docopt
 
@@ -22,6 +23,13 @@ except Exception as e:
 	print(e.message, file=sys.stderr)
 	sys.exit(1)
 
+def cleanup(signum, frame):
+	policy.write_changes()
+	exitstatus = 1 if signum else 0
+	sys.exit(exitstatus)
+
+signal.signal(signal.SIGINT, cleanup)
+
 for i in range(numcards):
 	card = policy.fetch_card()
 	print("----------------------- {}".format(card.hash_))
@@ -32,4 +40,5 @@ for i in range(numcards):
 	while (yn.lower() != 'y') and (yn.lower() != 'n'):
 		yn = input('Did you know the answer? [y/n]')
 	policy.update_card(card, True if yn.lower() == 'y' else False)
-policy.write_changes()
+
+cleanup(None, None)
