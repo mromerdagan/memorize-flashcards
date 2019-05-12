@@ -1,3 +1,16 @@
+memorize-flashcards (1.0-33) unstable; urgency=medium
+
+  * Follow PyPI standards:
+    - Add README.txt
+    - Update copyright file to use as python licence as well
+    - Add LICENSE.txt
+    - Add long_description, license to setup.py
+    - Add MANIFEST.in file
+  * Add cleanup routine to be used in SIGINT
+  * console-client: Allow infinte session
+
+ -- Omer Dagan <omer.dagan@harmonicinc.com>  Sun, 12 May 2019 16:11:00 +0300
+
 memorize-flashcards (1.0-32) unstable; urgency=medium
 
   * Make app and package Python3
