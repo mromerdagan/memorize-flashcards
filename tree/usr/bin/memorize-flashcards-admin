@@ -48,7 +48,7 @@ create_empty_db() {
 
 	## Create new course database and an empty cards table
 	touch "$coursetable"
-	echo "# Hash\t\t\t\t\t\tPath\t\t\t\t\t\t\t\t\t\tLesson\tPeriod" > "$coursetable"
+	echo -e "# Hash\t\t\t\t\t\tPath\t\t\t\t\t\t\t\t\t\tLesson\tPeriod" > "$coursetable"
 }
 
 cards_dir=`read_conf_var CARDSROOT`
@@ -63,7 +63,7 @@ increase_refcount() {
 		refcount=$((refcount+1))
 		sed -i "s,${cardhash}.*,${cardhash}\t`basename ${carddest}`\t${refcount}," $cards_table
 	else
-		echo "$cardhash\t`basename ${carddest}`\t1" >> "$cards_table"
+		echo -e "$cardhash\t`basename ${carddest}`\t1" >> "$cards_table"
 		echo "I: Copy $cardfile --> $carddest"
 		cp "$cardfile" "$carddest"
 	fi
@@ -91,7 +91,7 @@ add_card() {
 
 	# Add card record to course table
 	echo "I: Insert card record ('$carddest', '$cardhash', -, -)"
-	echo "$cardhash\t\t$carddest\t-\t-" >> "$coursetable"
+	echo -e "$cardhash\t\t$carddest\t-\t-" >> "$coursetable"
 }
 
 decrease_refcount() {

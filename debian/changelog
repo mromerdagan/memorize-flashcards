@@ -1,3 +1,10 @@
+memorize-flashcards (1.0-34) unstable; urgency=medium
+
+  * Add "-e" to relevant echos to show "\t" properly
+  * Seperate 2do from README. Add 2dos 
+
+ -- Omer Dagan <mr.omer.dagan@gmail.com>  Tue, 29 Oct 2019 10:43:44 +0200
+
 memorize-flashcards (1.0-33) unstable; urgency=medium
 
   * Follow PyPI standards:
