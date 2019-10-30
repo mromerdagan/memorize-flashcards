@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-35) unstable; urgency=medium
+
+  * Bug fix: Stop fetching two cards in konsole client
+
+ -- Omer Dagan <omerda@essence-grp.com>  Wed, 27 Nov 2019 10:17:07 +0200
+
 memorize-flashcards (1.0-34) unstable; urgency=medium
 
   * Add "-e" to relevant echos to show "\t" properly

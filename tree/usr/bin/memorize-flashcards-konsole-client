@@ -39,7 +39,6 @@ def gen_cards(policy, numcards=0):
 			break
 
 for card in gen_cards(policy, numcards):
-	card = policy.fetch_card()
 	print("----------------------- {}".format(card.hash_))
 	print(card.get_printable('Q'))
 	_ = input('')
