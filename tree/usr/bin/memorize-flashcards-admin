@@ -25,6 +25,8 @@ usage() {
 	echo >&2 "    $me update-card <coursename> <cardhash> <new-lesson-val> <new-period-val>"
 	echo >&2 "    $me edit-card <coursename>"
 	echo >&2 "    $me show-card <cardhash>"
+	echo >&2 "    $me backup <backup-path>"
+	echo >&2 "    $me restore <backup-path>"
 	exit 1
 }
 
@@ -37,6 +39,7 @@ conf="/etc/memorize-flashcards/conf"
 read_conf_var() {
 	local varname="$1"
 	grep "^$varname\s\+" "$conf" | awk '{print $2}'
+	# awk '$1 == "'"$varname"'" {print $2}' "$conf"
 }
 
 dbroot="`read_conf_var DBROOT`"
@@ -264,17 +267,36 @@ case "$action" in
 		[ "$#" -eq 2 ] || usage
 		cardhash="$2"
 		[ -n "$EDITOR" ] || die "E: No deafult editor (EDITOR env variable empty)"
-		[ -x "`which $EDITOR`" ] || die "E: '$EDITOR' is not execuable (check EDITOR env variable)"
+		[ -x "`which $EDITOR`" ] || \
+			die "E: '$EDITOR' is not execuable (check EDITOR env variable)"
 		edit_card "$cardhash"
 		;;
 	show-card)
 		[ "$#" -eq 2 ] || usage
 		cardhash="$2"
-		grep "^$cardhash" "$cards_table" --quiet || die "E: Card not found in cards table ($cards_table)"
+		grep "^$cardhash" "$cards_table" --quiet || \
+			die "E: Card not found in cards table ($cards_table)"
 		cardbase=`awk  -vcardhash="$cardhash" '$1 == cardhash { print $2 }' "$cards_table"`
 		cardfile="$cards_dir/$cardbase"
 		[ -f "$cardfile" ] || die "E: Card table pointing to missing file: $cardfile"
 		cat "$cardfile"
+		;;
+	backup)
+		[ "$#" -eq 2 ] || usage
+		backup_dest="$2"
+		[ -e "$backup_dest" ] && \
+			die "E: Backup destination already exists ('$backup_dest')"
+		tempdir=$(mktemp -d)
+		mkdir "$tempdir/courses"
+		mkdir "$tempdir/cards"
+		ln "$dbroot"/* "$tempdir/courses"
+		ln "$cards_dir"/* "$tempdir/cards"
+		tar -c -f  "$backup_dest" -C "$tempdir" .
+		rm -rf $tempdir
+		echo "I: Wrote: '$backup_dest'"
+		;;
+	restore)
+		die "E: Not yet implemented"
 		;;
 	*)
 		die "E: Unknown action: $action"

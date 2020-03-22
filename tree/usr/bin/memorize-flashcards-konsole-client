@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """memorize-flashcards-konsole-client
 Usage:
-    nsg-run-compose-branch <coursename> <num-cards>
+    memorize-flashcards-konsole-client <coursename> <num-cards>
 """
 import sys
 import signal
