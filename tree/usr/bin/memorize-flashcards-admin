@@ -11,7 +11,7 @@ die() {
 	exit 1
 }
 
-me=`basename $0`
+me=$(basename "$0")
 usage() {
 	echo >&2 "Usage:"
 	echo >&2 "    $me create <coursename> [<cardfile>...]"
@@ -23,7 +23,7 @@ usage() {
 	echo >&2 "    $me list"
 	echo >&2 "    $me show-course <coursename>"
 	echo >&2 "    $me update-card <coursename> <cardhash> <new-lesson-val> <new-period-val>"
-	echo >&2 "    $me edit-card <coursename>"
+	echo >&2 "    $me edit-card (<card-has> | <cardfile>)"
 	echo >&2 "    $me show-card <cardhash>"
 	echo >&2 "    $me backup <backup-path>"
 	echo >&2 "    $me restore <backup-path>"
@@ -161,20 +161,20 @@ edit_card() {
 	local cardfile="$cards_dir/$cardbase"
 	[ -f "$cardfile" ] || die "E: Card table pointing to missing file: $cardfile"
 
-	local modifiedcard=`mktemp`
+	local modifiedcard=$(mktemp)
 	cp "$cardfile" "$modifiedcard"
 	chmod 644 "$modifiedcard"
 	"$EDITOR" "$modifiedcard"
-	local modifiedhash=`md5sum "$modifiedcard" | awk '{print $1}'`
+	local modifiedhash=$(md5sum "$modifiedcard" | awk '{print $1}')
 	if [ "$modifiedhash" = "$cardhash" ]; then
 		echo "W: Card hasn't changed. Nothing to do"
 	else
 		for coursetable in `ls "$dbroot"/*.db`; do
-			local coursename=`echo $coursetable | sed -e "s,$dbroot/,," -e 's,.db$,,'`
+			local coursename=$(echo $coursetable | sed -e "s,$dbroot/,," -e 's,.db$,,')
 			grep --silent "^$cardhash" "$coursetable" || continue
 
 			local old_record=""
-			old_record=`grep "^$cardhash" "$coursetable"`
+			old_record=$(grep "^$cardhash" "$coursetable")
 			# Preserve existing (lesson, period) values
 			local lesson=$(echo "$old_record" | awk '{print $3}')
 			local period=$(echo "$old_record" | awk '{print $4}')
@@ -266,6 +266,7 @@ case "$action" in
 	edit-card)
 		[ "$#" -eq 2 ] || usage
 		cardhash="$2"
+		[ -e "$cardhash" ] && cardhash=$(md5sum "$cardhash" | awk '{print $1}')
 		[ -n "$EDITOR" ] || die "E: No deafult editor (EDITOR env variable empty)"
 		[ -x "`which $EDITOR`" ] || \
 			die "E: '$EDITOR' is not execuable (check EDITOR env variable)"
