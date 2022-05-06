@@ -209,7 +209,7 @@ class ClassicPolicy(Policy):
 			freshcard.lesson = index
 			freshcard.period = 1
 
-	def _standardize_lessons(self):
+	def _shift_lessons(self):
 		min_lesson = min([card.lesson for card in self.cards if card.lesson])
 		diff = min_lesson - 1
 		if diff:
@@ -221,11 +221,13 @@ class ClassicPolicy(Policy):
 		if (len(self.cards) == 0):
 			self.cards = self.used_pile
 			self.used_pile = []
-		self.sort_cards()
+		self.sort_cards() # Sort after possible swap between self.cards and self.used_pile
 		if self.cards[0].lesson == 1:
 			return
-		self._fill_course(2)
-		self._standardize_lessons()
+
+		self._fill_course(2) # If no cards left in lesson 1, make sure lesson 2 has enough cards
+		self._shift_lessons() # Shift lessons 
+		self.sort_cards()
 
 	## Public methods, derived from super class
 	def fetch_card(self):

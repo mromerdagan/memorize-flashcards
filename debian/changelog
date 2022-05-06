@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-37) unstable; urgency=medium
+
+  * Bug fix: sort cards after fixing first lesson
+
+ -- Omer Dagan <omerda@essence-grp.com>  Fri, 06 May 2022 15:08:27 +0300
+
 memorize-flashcards (1.0-36) unstable; urgency=medium
 
   * admin: add option to edit card by filename in addition to by hash
