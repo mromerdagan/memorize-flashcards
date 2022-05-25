@@ -211,10 +211,23 @@ case "$action" in
 		[ "$#" -eq 2 ] || usage
 		coursename="$2"
 		coursetable="$dbroot/${coursename}.db"
-		cat "$coursetable" | clean_comments | while read cardhash carddest lesson period; do 
-			decrease_refcount "$cardhash"
-		done
-		rm "$coursetable"
+		[ -f "$coursetable" ] || die "Missing course: '$coursename'"
+		read -p "Are you sure you want to delete course '$coursename'? [N/y] " yn
+		case "$yn" in
+			[yY])
+				yn=1
+				;;
+			*)
+				yn=0
+				;;
+		esac
+
+		if [ "$yn" -eq 1 ]; then
+			cat "$coursetable" | clean_comments | while read cardhash carddest lesson period; do 
+				decrease_refcount "$cardhash"
+			done
+			rm "$coursetable"
+		fi
 		;;
 	add-cards)
 		[ "$#" -ge 3 ] || usage

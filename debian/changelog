@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-38) unstable; urgency=medium
+
+  * Admin: when delete course, prompt a confirmation question
+
+ -- Omer Dagan <omerda@essence-grp.com>  Wed, 25 May 2022 14:38:11 +0300
+
 memorize-flashcards (1.0-37) unstable; urgency=medium
 
   * Bug fix: sort cards after fixing first lesson
