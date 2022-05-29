@@ -1,3 +1,14 @@
+memorize-flashcards (1.0-39) unstable; urgency=medium
+
+  * ClassicPolicy: Make sure each lesson is "fixed", new (fresh) cards are added to it
+    - When "fixing" new lesson (that is, making sure it has at least MIN
+      number of cards) we make sure that even if no need to add cards to it,
+      at least one fresh card will be added.
+    - This way we make sure that there is no "starvation" in the sence that
+      all cards will show up in the some course some time
+
+ -- Omer Dagan <omerda@essence-grp.com>  Sun, 29 May 2022 10:32:23 +0300
+
 memorize-flashcards (1.0-38) unstable; urgency=medium
 
   * Admin: when delete course, prompt a confirmation question

@@ -201,11 +201,29 @@ class ClassicPolicy(Policy):
 		return self._get_lesson(None)
 
 	def _fill_course(self, index):
-		while (len(self._get_lesson(index)) < self.LESSON_MIN_LENGTH):
-			try:
-				freshcard = random.choice(self._fresh_cards())
-			except IndexError:
-				break
+		fresh_cards = self._fresh_cards()
+		num_fresh_cards = len(fresh_cards)
+		if not(num_fresh_cards): # Nothing to fill lesson with
+			print("D: no fresh cards to add")
+			return
+		random.shuffle(fresh_cards)
+
+		num_cards_in_curr_lesson = len(self._get_lesson(index))
+		num_cards_for_minimum = self.LESSON_MIN_LENGTH - num_cards_in_curr_lesson
+
+		# Add at least one fresh card, even if there are alredy enough cards
+		# This way fresh cards gets their way into the lessons
+		if (num_cards_for_minimum <= 0):
+			print("D: Adding only one fresh card!")
+			freshcard = fresh_cards.pop()
+			freshcard.lesson = index
+			freshcard.period = 1
+			return
+
+		num_cards_to_fill = min(num_cards_for_minimum, num_fresh_cards)
+		print("D: Adding {} fresh cards!".format(num_cards_to_fill))
+		for i in range(num_cards_to_fill):
+			freshcard = fresh_cards.pop()
 			freshcard.lesson = index
 			freshcard.period = 1
 
@@ -226,7 +244,7 @@ class ClassicPolicy(Policy):
 			return
 
 		self._fill_course(2) # If no cards left in lesson 1, make sure lesson 2 has enough cards
-		self._shift_lessons() # Shift lessons 
+		self._shift_lessons() # Shift lessons
 		self.sort_cards()
 
 	## Public methods, derived from super class
