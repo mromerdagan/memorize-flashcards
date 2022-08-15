@@ -13,6 +13,7 @@ setup(name='memorize_flashcards',
     data_files=[
     	('/usr/bin', glob.glob('tree/usr/bin/*')),
     	('/etc/memorize-flashcards', glob.glob('tree/etc/memorize-flashcards/*')),
+    	('/etc/bash_completion.d', glob.glob('tree/etc/bash_completion.d/*')),
     ],
     license='GPL-3.0',
     long_description=open('README.txt').read(),

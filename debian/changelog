@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-41) unstable; urgency=medium
+
+  * Admin tool: add missing files
+
+ -- Omer Dagan <omerda@essence-grp.com>  Mon, 15 Aug 2022 15:15:05 +0300
+
 memorize-flashcards (1.0-40) unstable; urgency=medium
 
   * Admin tool: add bash completion
