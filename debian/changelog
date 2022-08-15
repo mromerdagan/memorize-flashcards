@@ -1,3 +1,9 @@
+memorize-flashcards (1.0-40) unstable; urgency=medium
+
+  * Admin tool: add bash completion
+
+ -- Omer Dagan <omerda@essence-grp.com>  Mon, 15 Aug 2022 10:34:39 +0300
+
 memorize-flashcards (1.0-39) unstable; urgency=medium
 
   * ClassicPolicy: Make sure each lesson is "fixed", new (fresh) cards are added to it

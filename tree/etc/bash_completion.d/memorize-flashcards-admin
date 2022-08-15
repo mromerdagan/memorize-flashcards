@@ -1,0 +1,33 @@
+# bash completion for memorize-flashcards-admin
+
+which memorize-flashcards-admin >/dev/null || return
+
+_memorize-flashcards-admin()
+{
+	if declare -F _init_completion > /dev/null; then
+		_init_completion || return
+	fi
+
+	case $COMP_CWORD in
+	1)
+		COMPREPLY=( $(compgen -W "$(memorize-flashcards-admin 2>&1 | sed -e 's,Usage:,,' -e 's,^\s\+,,' -e '/^$/d' | awk '{print $2}')" -- $2) )
+		;;
+	2)
+		case "$3" in
+			add-cards|remove-card|verify|dump|show-course|update-card)
+				COMPREPLY=( $(compgen -W "$(memorize-flashcards-admin list)" -- $2) )
+				;;
+			*)
+				_filedir
+				;;
+		esac
+		;;
+	*)
+		_filedir
+		;;
+
+	esac
+}
+complete -F _memorize-flashcards-admin memorize-flashcards-admin
+
+
