@@ -1,0 +1,23 @@
+# bash completion for memorize-flashcards-konsole-client
+
+which memorize-flashcards-konsole-client >/dev/null || return
+
+_memorize-flashcards-konsole-client()
+{
+	if declare -F _init_completion > /dev/null; then
+		_init_completion || return
+	fi
+
+	case $COMP_CWORD in
+	1)
+		COMPREPLY=( $(compgen -W "$(memorize-flashcards-admin list)" -- $2) )
+		;;
+	*)
+		_filedir
+		;;
+
+	esac
+}
+complete -F _memorize-flashcards-konsole-client memorize-flashcards-konsole-client
+
+
